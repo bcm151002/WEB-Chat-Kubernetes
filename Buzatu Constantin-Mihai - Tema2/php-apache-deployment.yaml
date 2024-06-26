@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php-apache
+spec:
+  selector:
+    matchLabels:
+      app: php-apache
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: php-apache
+    spec:
+      containers:
+        - name: php-apache
+          image: bcm15102002/tema:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-apache
+  labels:
+    app: php-apache
+spec:
+  externalIPs:
+  - 10.0.0.4
+  ports:
+  - port: 88
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: php-apache

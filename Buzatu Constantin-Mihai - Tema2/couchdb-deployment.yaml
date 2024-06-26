@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: couchdb
+spec:
+  serviceName: "couch-service"
+  selector:
+    matchLabels:
+      app: couch
+  template:
+    metadata:
+      labels:
+        app: couch
+    spec:
+      containers:
+      - name: couchdb
+        image: couchdb:3.3.2
+        env:
+        - name: NODE_NETBIOS_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: NODENAME
+          value: $(NODE_NETBIOS_NAME).couch-service
+        - name: COUCHDB_USER
+          value: admin
+        - name: COUCHDB_PASSWORD
+          value: password
+        - name: COUCHDB_SECRET
+          value: monster
+        - name: ERL_FLAGS
+          value: "-name couchdb@$(NODENAME) -setcookie mycookievalue"
+        ports:
+        - name: couchdb
+          containerPort: 5984
+        - name: epmd
+          containerPort: 4369
+        - containerPort: 9100
+        volumeMounts:
+          - name: couch-pvc
+            mountPath: /opt/couchdb/data
+  volumeClaimTemplates:
+  - metadata:
+      name: couch-pvc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
